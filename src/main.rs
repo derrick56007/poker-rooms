@@ -114,7 +114,7 @@ impl HttpServer {
 
                 let index = read_to_string("index.html").unwrap();
                 let room_name: String;
-                let guard = counter.lock().unwrap();
+                let mut guard = counter.lock().unwrap();
 
                 let response = match (method, path) {
                     (methods::GET, paths::ROOT) => {
@@ -125,9 +125,8 @@ impl HttpServer {
                         }
                     }
                     (methods::GET, paths::CREATE_ROOM) => {
-                        let mut num = counter.lock().unwrap();
-                        *num += 1;
-                        room_name = format!("{}", *guard);
+                        *guard += 1;
+                        room_name = format!("{:?}", *guard);
                         content_type = content_types::TEXT;
                         Response {
                             status_line: StatusLines::OK,
