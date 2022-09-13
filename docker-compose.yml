@@ -1,7 +1,7 @@
 version: "3.9"
 services:
-  server:
-    container_name: server
+  poker_rooms:
+    container_name: poker_rooms
     # image: ghcr.io/derrick56007/poker-rooms-server:latest
     build:
       context: .
