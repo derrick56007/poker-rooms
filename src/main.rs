@@ -7,9 +7,12 @@ use std::{
     thread,
 };
 
+use tungstenite::accept;
+
 use crate::responses::{Response, StatusLines};
 
 mod paths {
+    pub const WEBSOCKET: &'static str = "ws";
     pub const ROOT: &'static str = "";
     pub const CREATE_ROOM: &'static str = "create";
 }
@@ -133,7 +136,26 @@ impl HttpServer {
                             content: &room_name,
                         }
                     }
-                    _ => responses::NOT_FOUND_RESPONSE,
+                    (methods::GET, paths::WEBSOCKET) => {
+                        //
+                        let mut websocket = accept(stream).unwrap();
+                        loop {
+                            let msg = websocket.read_message().unwrap();
+
+                            // We do not want to send back ping/pong messages.
+                            if msg.is_binary() || msg.is_text() {
+                                websocket.write_message(msg).unwrap();
+                            }
+                        }
+                        // responses::NOT_FOUND_RESPONSE
+                    }
+                    _ => {
+                        content_type = content_types::HTML;
+                        Response {
+                            status_line: StatusLines::OK,
+                            content: &index,
+                        }
+                    }
                 };
                 let response_string = format!(
                     "{}\r\nContent-Length: {}\r\nContent-Type: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET\r\ncharset=UTF-8\r\n\r\n{}",
