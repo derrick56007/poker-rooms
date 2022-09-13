@@ -165,7 +165,7 @@ impl HttpServer {
                     response.content
                 );
 
-                println!("{}", response_string);
+                // println!("{}", response_string);
 
                 stream.write(response_string.as_bytes()).unwrap();
                 stream.flush().unwrap();
