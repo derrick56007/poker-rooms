@@ -127,7 +127,7 @@ impl HttpServer {
                     (methods::GET, paths::CREATE_ROOM) => {
                         let mut num = counter.lock().unwrap();
                         *num += 1;
-                        room_name = guard.to_string();
+                        room_name = format!("{}", *guard);
                         content_type = content_types::TEXT;
                         Response {
                             status_line: StatusLines::OK,
