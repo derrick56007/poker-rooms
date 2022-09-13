@@ -8,6 +8,7 @@ FROM ubuntu:focal AS runner
 
 WORKDIR /poker_rooms
 
+COPY index.html .
 COPY --from=server_builder /usr/local/cargo/bin/poker_rooms /usr/local/bin/poker_rooms
 
 CMD ["poker_rooms"]
