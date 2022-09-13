@@ -2,13 +2,16 @@ use std::{
     fs::read_to_string,
     io::{Read, Write},
     net::TcpListener,
-    thread::spawn,
+    rc::Rc,
+    sync::{Arc, Mutex},
+    thread,
 };
 
 use crate::responses::{Response, StatusLines};
 
 mod paths {
     pub const ROOT: &'static str = "";
+    pub const CREATE_ROOM: &'static str = "create";
 }
 
 mod methods {
@@ -80,11 +83,14 @@ pub struct HttpServer {
 
 impl HttpServer {
     pub fn run(&mut self) {
+        let counter = Arc::new(Mutex::new(0));
+
         for stream in TcpListener::bind(format!("0.0.0.0:{}", self.port))
             .unwrap()
             .incoming()
         {
-            spawn(move || {
+            let counter = Arc::clone(&counter);
+            thread::spawn(move || {
                 let mut stream = stream.unwrap();
 
                 let mut buffer = [0; 20000];
@@ -107,6 +113,8 @@ impl HttpServer {
                 let mut content_type = content_types::TEXT;
 
                 let index = read_to_string("index.html").unwrap();
+                let room_name: String;
+                let guard = counter.lock().unwrap();
 
                 let response = match (method, path) {
                     (methods::GET, paths::ROOT) => {
@@ -114,6 +122,16 @@ impl HttpServer {
                         Response {
                             status_line: StatusLines::OK,
                             content: &index,
+                        }
+                    }
+                    (methods::GET, paths::CREATE_ROOM) => {
+                        let mut num = counter.lock().unwrap();
+                        *num += 1;
+                        room_name = guard.to_string();
+                        content_type = content_types::TEXT;
+                        Response {
+                            status_line: StatusLines::OK,
+                            content: &room_name,
                         }
                     }
                     _ => responses::NOT_FOUND_RESPONSE,
@@ -126,7 +144,7 @@ impl HttpServer {
                     response.content
                 );
 
-                println!("{}", response_string);
+                // println!("{}", response_string);
 
                 stream.write(response_string.as_bytes()).unwrap();
                 stream.flush().unwrap();
