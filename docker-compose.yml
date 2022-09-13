@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  server:
+    container_name: server
+    # image: ghcr.io/derrick56007/poker-rooms-server:latest
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - 8089:8088
+    command: poker_rooms
