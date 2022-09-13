@@ -7,3 +7,7 @@ edition = "2021"
 
 [dependencies]
 tungstenite = "0.17.3"
+
+[[bin]]
+name = "poker_rooms"
+path = "src/main.rs"
